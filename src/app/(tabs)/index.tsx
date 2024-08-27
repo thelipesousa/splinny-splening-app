@@ -33,11 +33,11 @@ export default function Home() {
         <View className="bg-white/20 rounded-full p-2">
           <Image
             source={require("../../../assets/images/splinny.png")}
-            className="w-72 h-72 rounded-full"
+            className="w-80 h-80 rounded-full"
           />
         </View>
       </View>
-      
+      <View className="py-16">
          {/* Botão Começar*/}
          <TouchableOpacity
         onPress={() => router.push("./telaCapturaImagem")}
@@ -45,7 +45,7 @@ export default function Home() {
       >
         <Text style={styles.buttonText}>Começar!</Text>
       </TouchableOpacity>
-
+      </View>
     </View>
   );
 }
