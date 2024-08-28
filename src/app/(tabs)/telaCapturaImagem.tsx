@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { selectImageFromGallery, takePhotoWithCamera } from "../../../src/controllers/imageController"; // Importando o controlador
 
 export default function TelaCapturaImagem() {
@@ -31,7 +31,7 @@ export default function TelaCapturaImagem() {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-        <Ionicons className="py-8" name="arrow-back" size={16} color="black" />
+        <MaterialIcons className="py-8" name="arrow-back-ios" size={18} color="black" />
         <Text style={styles.backButtonText}>Voltar</Text>
       </TouchableOpacity>
       <View style={styles.content}>
