@@ -1,23 +1,38 @@
 import { Text, View, Image, StyleSheet, Button } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import { useRouter } from "expo-router";
-import { useEffect, useRef } from "react";
+import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
+import { useNavigation, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import Animated, { useSharedValue, withSpring} from "react-native-reanimated";
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from "react-native-responsive-screen";
+import Loading from "@/components/loading";
 
 export default function Home() {
   const router = useRouter();
   // const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  const [loading, setLoading] = useState(false)
+
   const ring1padding = useSharedValue(0);
   const ring2padding = useSharedValue(0);
+
+  const handlePress = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      router.push('./telaCapturaImagem');
+    }, 200); // Tempo do loading antes de navegar
+  };
 
   useEffect(() => {
     ring1padding.value = 0
     ring2padding.value = 0
-    setTimeout(() => ring1padding.value = withSpring(ring1padding.value+hp(5)), 100)
-    setTimeout(() => ring2padding.value = withSpring(ring2padding.value+wp(5.5)), 300)
+    setTimeout(() => ring1padding.value = withSpring(ring1padding.value+hp(2)), 200)
+    setTimeout(() => ring2padding.value = withSpring(ring2padding.value+wp(4)), 400)
+
+    // timer para para a proxima tela
+    // setTimeout(() => router.push('/telaCapturaImagem'), 2500)
+
   },[])
 
   // useEffect(() => {
@@ -29,7 +44,7 @@ export default function Home() {
   // }, [fadeAnim]);
 
   return (
-    <View className="bg-red-600 flex-1 justify-center items-center space-y-10">
+    <ScrollView className=" space-y-10" contentContainerStyle={styles.telaInicial}>
       <StatusBar style="light" />
 
       {/* Texto animado */}
@@ -46,9 +61,10 @@ export default function Home() {
       </Animated.View>
 
 
-      {/* Logo da SPLINNY */}
-      <Animated.View className="bg-white/20 rounded-full p-6 mt-10" style={{padding: ring1padding}}>
-        <Animated.View className="bg-white/20 rounded-full p-4" style={{padding: ring2padding}}>
+      {/* Logo da SPLINNY */} 
+      {/* e bordas para a logo */}
+      <Animated.View className="bg-white/20 rounded-full p-4 mt-10" style={{padding: ring1padding}}>
+        <Animated.View className="bg-white/20 rounded-full p-2" style={{padding: ring2padding}}>
           <Image
             source={require("../../../assets/images/splinny.png")}
             className="w-80 h-80 rounded-full"
@@ -57,19 +73,24 @@ export default function Home() {
       </Animated.View>
       <View className="py-16">
          {/* Botão Começar*/}
-         <TouchableOpacity
-        onPress={() => router.push("./telaCapturaImagem")}
+         <TouchableOpacity onPress={handlePress}
         style={styles.button}
       >
         <Text style={styles.buttonText}>Começar!</Text>
       </TouchableOpacity>
+
+      {loading && (
+          <View style={styles.loadingContainer}>
+            <Loading />
+          </View>
+      )}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  logo: {
+  logo: { 
     flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",
@@ -96,4 +117,13 @@ const styles = StyleSheet.create({
     padding: 8,
     paddingTop: 8,
   },
+  telaInicial: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+    backgroundColor: "red"
+  },
+  loadingContainer: {
+    paddingTop: 20,
+  }
 });

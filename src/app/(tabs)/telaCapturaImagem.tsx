@@ -5,10 +5,13 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { selectImageFromGallery, takePhotoWithCamera } from "../../../src/controllers/imageController"; // Importando o controlador
+import { useRouter } from "expo-router";
 
 export default function TelaCapturaImagem() {
   const [selectedImage, setSelectedImage] = useState<{ localUri: string } | null>(null);
+
   const navigation = useNavigation();
+  const router = useRouter();
 
   const handleGoBack = () => {
     navigation.goBack();
@@ -29,7 +32,7 @@ export default function TelaCapturaImagem() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 justify-center align-items" style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
         <MaterialIcons className="py-8" name="arrow-back-ios" size={18} color="black" />
         <Text style={styles.backButtonText}>Voltar</Text>
@@ -50,6 +53,13 @@ export default function TelaCapturaImagem() {
         <TouchableOpacity style={styles.button} onPress={handleTakePhoto}>
           <Text style={styles.buttonText}>Tirar Foto</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity className=""
+        onPress={() => router.push("./telaResultadosPesquisa")}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Encontrar receitas</Text>
+      </TouchableOpacity>
       </View>
     </View>
   );
@@ -59,6 +69,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#d9d9d9",
+    justifyContent: "center",
+    alignContent: "center",
   },
   backButton: {
     flexDirection: "row",
@@ -86,7 +98,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: "#007bff",
+    backgroundColor: "#000000",
     padding: 10,
     marginBottom: 10,
     borderRadius: 5,

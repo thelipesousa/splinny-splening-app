@@ -4,11 +4,11 @@
     "slug": "splinny-splening-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/splinny.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/splinny.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
