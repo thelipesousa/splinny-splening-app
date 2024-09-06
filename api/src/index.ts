@@ -1,14 +1,29 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import recipeRoutes from './routes/recipeRoutes';
+
+dotenv.config();
 
 const app = express();
-const port = 3000;
 
+// Middleware para parsear JSON
 app.use(express.json());
 
-app.get('/', (req: Request, res: Response) => {
-    res.send('Hello from TypeScript API!');
-});
+// Conectando ao MongoDB
+mongoose.connect(process.env.MONGO_URI as string)
+  .then(() => console.log('Conectado ao MongoDB'))
+  .catch((error) => console.error('Erro ao conectar ao MongoDB:', error));
 
-app.listen(port, () => {
-    console.log(`API running on http://localhost:${port}`);
+  app.get('/', (req, res) => {
+    res.status(200).send('API está funcionando!');
+  });
+  
+
+// Usando as rotas
+app.use('/', recipeRoutes);
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
