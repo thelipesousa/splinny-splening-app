@@ -4,12 +4,11 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { selectImageFromGallery, takePhotoWithCamera } from "../../../src/controllers/imageController"; // Importando o controlador
+import { selectImageFromGallery, takePhotoWithCamera } from "../../../src/controllers/imageController";
 import { useRouter } from "expo-router";
 
 export default function TelaCapturaImagem() {
   const [selectedImage, setSelectedImage] = useState<{ localUri: string } | null>(null);
-
   const navigation = useNavigation();
   const router = useRouter();
 
@@ -21,6 +20,8 @@ export default function TelaCapturaImagem() {
     const imageUri = await selectImageFromGallery();
     if (imageUri) {
       setSelectedImage({ localUri: imageUri });
+      // Navega para a tela de loading
+      router.push("./telaLoading");
     }
   };
 
@@ -28,13 +29,15 @@ export default function TelaCapturaImagem() {
     const imageUri = await takePhotoWithCamera();
     if (imageUri) {
       setSelectedImage({ localUri: imageUri });
+      // Navega para a tela de loading
+      router.push("./telaLoading");
     }
   };
 
   return (
-    <View className="flex-1 justify-center align-items" style={styles.container}>
+    <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-        <MaterialIcons className="py-8" name="arrow-back-ios" size={18} color="black" />
+        <MaterialIcons name="arrow-back-ios" size={18} color="black" />
         <Text style={styles.backButtonText}>Voltar</Text>
       </TouchableOpacity>
       <View style={styles.content}>
@@ -60,6 +63,13 @@ export default function TelaCapturaImagem() {
       >
         <Text style={styles.buttonText}>Encontrar receitas</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity className=""
+        onPress={() => router.push("./telaExibirReceita")}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Exibir Receita</Text>
+      </TouchableOpacity>
       </View>
     </View>
   );
@@ -68,14 +78,17 @@ export default function TelaCapturaImagem() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#d9d9d9",
+    backgroundColor: "#ffffff",
     justifyContent: "center",
     alignContent: "center",
+    padding: 20,
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
+    position: "absolute",
+    top: 48,
   },
   backButtonText: {
     marginLeft: 8,
