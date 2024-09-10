@@ -1,0 +1,21 @@
+# 1. Criar o ambiente virtual
+python -m venv venv
+
+# 2. Ativar o ambiente virtual
+# No Windows:
+venv\Scripts\activate
+# No macOS/Linux:
+source venv/bin/activate
+
+# 3. Instalar as dependências no ambiente virtual
+pip install Flask pymongo
+
+ou 
+
+pip install requirements.txt
+
+# 4. Executar a API
+python app.py
+
+# 5. Quando terminar, desativar o ambiente
+deactivate

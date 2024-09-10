@@ -20,7 +20,7 @@ export default function Home() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      router.push('./telaCapturaImagem');
+      router.push('./telaResultadosPesquisa');
     }, 200); // Tempo do loading antes de navegar
   };
 

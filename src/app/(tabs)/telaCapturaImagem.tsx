@@ -34,7 +34,7 @@ export default function TelaCapturaImagem() {
   return (
     <View className="flex-1 justify-center align-items" style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-        <MaterialIcons className="py-8" name="arrow-back-ios" size={18} color="black" />
+        <MaterialIcons name="arrow-back-ios" size={18} color="black" />
         <Text style={styles.backButtonText}>Voltar</Text>
       </TouchableOpacity>
       <View style={styles.content}>
@@ -60,6 +60,13 @@ export default function TelaCapturaImagem() {
       >
         <Text style={styles.buttonText}>Encontrar receitas</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity className=""
+        onPress={() => router.push("./telaExibirReceita")}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Exibir Receita</Text>
+      </TouchableOpacity>
       </View>
     </View>
   );
@@ -68,14 +75,17 @@ export default function TelaCapturaImagem() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#d9d9d9",
+    backgroundColor: "#ffffff",
     justifyContent: "center",
     alignContent: "center",
+    padding: 20,
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
+    position: "absolute",
+    top: 48,
   },
   backButtonText: {
     marginLeft: 8,
