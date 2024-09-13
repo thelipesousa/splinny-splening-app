@@ -5,13 +5,15 @@ import Recipe from '../models/recipeModel';
 // Obter todas as receitas
 export const getRecipes = async (req: Request, res: Response) => {
   try {
+    console.log("Recebendo requisição para /recipes");
     const recipes = await Recipe.find();
     res.status(200).json(recipes);
   } catch (error) {
-    console.error('Erro ao buscar receitas:', error);
-    res.status(500).json({ message: 'Erro ao buscar receitas' });
+    console.error("Erro ao buscar receitas:", error);
+    res.status(500).json({ message: "Erro ao buscar receitas" });
   }
 };
+
 
 // Obter uma receita pelo ID
 export const getRecipeById = async (req: Request, res: Response) => {

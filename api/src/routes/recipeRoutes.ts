@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/recipes', getRecipes);
 
 // Rota para obter uma receita específica
-router.get('/recipes:id', getRecipeById);
+router.get('/recipes/:id', getRecipeById);
 
 // Rota para adicionar uma nova receita
 router.post('/recipes', addRecipe);

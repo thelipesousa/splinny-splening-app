@@ -2,26 +2,28 @@
 
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { selectImageFromGallery, takePhotoWithCamera } from "../../../src/controllers/imageController";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 
 export default function TelaCapturaImagem() {
   const [selectedImage, setSelectedImage] = useState<{ localUri: string } | null>(null);
-  const navigation = useNavigation();
   const router = useRouter();
+  const navigation = useNavigation();
 
   const handleGoBack = () => {
     navigation.goBack();
-  };
+  }
 
   const handleSelectImage = async () => {
     const imageUri = await selectImageFromGallery();
     if (imageUri) {
       setSelectedImage({ localUri: imageUri });
-      // Navega para a tela de loading
-      router.push("./telaLoading");
+      // Navega para a tela de loading passando a URI da imagem
+      router.push({
+        pathname: "./telaLoading",
+        params: { imageUri },
+      });
     }
   };
 
@@ -29,8 +31,11 @@ export default function TelaCapturaImagem() {
     const imageUri = await takePhotoWithCamera();
     if (imageUri) {
       setSelectedImage({ localUri: imageUri });
-      // Navega para a tela de loading
-      router.push("./telaLoading");
+      // Navega para a tela de loading passando a URI da imagem
+      router.push({
+        pathname: "./telaLoading",
+        params: { imageUri },
+      });
     }
   };
 
