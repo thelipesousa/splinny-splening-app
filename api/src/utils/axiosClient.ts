@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-  baseURL: 'http://192.168.0.185:3001', // Altere para o IP da sua máquina, antes estava http://localhost:3001
+  baseURL: 'http://192.168.0.187:3001', // Adicione o endereço IP local da sua máquina, exemplo: 192.168.102. 
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

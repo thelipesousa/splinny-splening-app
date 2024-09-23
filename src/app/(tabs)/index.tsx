@@ -31,7 +31,7 @@ export default function Home() {
     setTimeout(() => ring2padding.value = withSpring(ring2padding.value+wp(4)), 400)
 
     // timer para para a proxima tela
-    // setTimeout(() => router.push('/telaCapturaImagem'), 2500)
+   setTimeout(() => router.push('./telaSugestaoDiaReceita'), 2500)
 
   },[])
 
@@ -73,11 +73,11 @@ export default function Home() {
       </Animated.View>
       <View className="py-16">
          {/* Botão Começar*/}
-         <TouchableOpacity onPress={handlePress}
+         {/* <TouchableOpacity onPress={handlePress}
         style={styles.button}
       >
         <Text style={styles.buttonText}>Começar!</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {loading && (
           <View style={styles.loadingContainer}>

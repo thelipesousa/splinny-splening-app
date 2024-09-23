@@ -2,8 +2,9 @@ import React from "react";
 import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router, useNavigation } from "expo-router";
+import Footer from "@/components/footer";
 
-export default function telaResultadosPesquisa() {
+export default function telaSugestaoDiaReceita() {
   const navigation = useNavigation();
 
   const handleGoBack = () => {
@@ -34,7 +35,7 @@ export default function telaResultadosPesquisa() {
       />
       <View style={styles.infoContainer}>
         <View style={styles.infoItem}>
-          <Ionicons name="leaf-outline" size={24} color="green" />
+          <Ionicons name="leaf-outline" size={24} color="red" />
           <Text>Vegetariano</Text>
         </View>
         <View style={styles.infoItem}>
@@ -59,6 +60,7 @@ export default function telaResultadosPesquisa() {
       <TouchableOpacity style={styles.button} onPress={() => router.push('/(tabs)/telaCapturaImagem')}>
         <Text style={styles.buttonText}>Tirar foto</Text>
       </TouchableOpacity>
+      <Footer></Footer>
     </View>
   );
 }

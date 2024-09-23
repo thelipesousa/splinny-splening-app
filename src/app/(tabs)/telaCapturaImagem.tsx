@@ -5,6 +5,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { selectImageFromGallery, takePhotoWithCamera } from "../../../src/controllers/imageController";
 import { useNavigation, useRouter } from "expo-router";
+import Footer from "@/components/footer";
 
 export default function TelaCapturaImagem() {
   const [selectedImage, setSelectedImage] = useState<{ localUri: string } | null>(null);
@@ -75,7 +76,15 @@ export default function TelaCapturaImagem() {
       >
         <Text style={styles.buttonText}>Exibir Receita</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity className=""
+        onPress={() => router.push("./telaPesquisa")}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Tela Pesquisa</Text>
+      </TouchableOpacity>
       </View>
+      <Footer></Footer>
     </View>
   );
 }

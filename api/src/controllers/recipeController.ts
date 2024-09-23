@@ -5,12 +5,36 @@ import Recipe from '../models/recipeModel';
 // Obter todas as receitas
 export const getRecipes = async (req: Request, res: Response) => {
   try {
-    console.log("Recebendo requisição para /recipes");
-    const recipes = await Recipe.find();
+    // Pega os parâmetros de consulta da URL
+    const { search, minCalories, maxCalories, minQuantity, maxQuantity } = req.query;
+
+    // Cria um objeto de filtros
+    const filters: any = {};
+
+    // Adiciona filtros baseados em query parameters
+    if (search) {
+      filters.name = new RegExp(search as string, 'i'); // Pesquisa case-insensitive
+    }
+    if (minCalories) {
+      filters.calories = { ...filters.calories, $gte: Number(minCalories) };
+    }
+    if (maxCalories) {
+      filters.calories = { ...filters.calories, $lte: Number(maxCalories) };
+    }
+    if (minQuantity) {
+      filters.quantity = { ...filters.quantity, $gte: Number(minQuantity) };
+    }
+    if (maxQuantity) {
+      filters.quantity = { ...filters.quantity, $lte: Number(maxQuantity) };
+    }
+
+    // Obtém as receitas com base nos filtros
+    const recipes = await Recipe.find(filters);
+
     res.status(200).json(recipes);
   } catch (error) {
-    console.error("Erro ao buscar receitas:", error);
-    res.status(500).json({ message: "Erro ao buscar receitas" });
+    console.error('Erro ao buscar receitas:', error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
 
