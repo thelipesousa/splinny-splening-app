@@ -1,66 +1,114 @@
-import React from "react";
-import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router, useNavigation } from "expo-router";
 import Footer from "@/components/footer";
+import { getRandomRecipe } from "../../../api/src/routes/apiRoute";
+import { translateText } from "../../../api/src/controllers/translateController";
+import Header from "@/components/header";
 
-export default function telaSugestaoDiaReceita() {
+interface Recipe {
+  id: number;
+  title: string;
+  image: string;
+  readyInMinutes: number;
+  spoonacularScore: number;
+  vegan: boolean;
+  summary: string;
+}
+
+export default function TelaSugestaoDiaReceita() {
   const navigation = useNavigation();
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const handleGoBack = () => {
     navigation.goBack();
   };
 
+  const fetchRandomRecipe = async () => {
+    try {
+      const recipeData = await getRandomRecipe();
+
+      // Tradução do sumário da receita
+      console.log('Recebido summary antes da tradução:', recipeData.summary);
+      const translatedSummary = await translateText(recipeData.summary, 'pt');
+      console.log('Summary traduzido:', translatedSummary);
+
+      // Atualiza o estado com o resumo traduzido
+      setRecipe({ ...recipeData, summary: translatedSummary });
+    } catch (error) {
+      console.error('Erro ao buscar receita ou traduzir:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeHtmlTags = (text: string) => {
+    return text.replace(/<[^>]*>?/gm, ""); // Remove as tags HTML
+  };
+
+  useEffect(() => {
+    fetchRandomRecipe();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Carregando receita...</Text>
+      </View>
+    );
+  }
+
+  if (!recipe) {
+    return (
+      <View style={styles.container}>
+        <Text>Erro ao carregar receita.</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.greeting}>Olá, cabeça de pika!</Text>
-      <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-        <MaterialIcons name="arrow-back-ios" size={18} color="black" />
-        <Text style={styles.backButtonText}>Voltar</Text>
-      </TouchableOpacity>
-      <Ionicons
-        name="settings-outline"
-        size={24}
-        color="black"
-        style={styles.iconConfig}
-      />
-      <Text style={styles.suggestion}>
-        Sugestão do dia. Dê uma olhada na receita
-      </Text>
-      <Image
-        source={{
-          uri: "https://blog-parceiros.ifood.com.br/wp-content/uploads/2022/06/still-life-of-hamburger-2021-08-26-17-52-23-utc-1.jpg.webp",
-        }}
-        style={styles.dishImage}
-      />
-      <View style={styles.infoContainer}>
-        <View style={styles.infoItem}>
-          <Ionicons name="leaf-outline" size={24} color="red" />
-          <Text>Vegetariano</Text>
+      <Header></Header>
+      <ScrollView contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}> 
+        {/* <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+          <MaterialIcons name="arrow-back-ios" size={18} color="black" />
+          <Text style={styles.backButtonText}>Voltar</Text>
+        </TouchableOpacity> */}
+        <Text style={styles.greeting}>Olá, visitante!</Text>
+        {/* <Ionicons
+          name="settings-outline"
+          size={24}
+          color="black"
+          style={styles.iconConfig}
+        /> */}
+        <Text style={styles.suggestion}>
+          Sugestão do dia. Dê uma olhada na receita:
+        </Text>
+        <Image source={{ uri: recipe.image }} style={styles.dishImage} />
+        <View style={styles.infoContainer}>
+          <View style={styles.infoItem}>
+            <Ionicons name="leaf-outline" size={24} color="green" />
+            <Text>{recipe.vegan ? "Vegana" : "Não é vegana"}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Ionicons name="time-outline" size={24} color="black" />
+            <Text>{recipe.readyInMinutes} min</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Ionicons name="flame-outline" size={24} color="black" />
+            <Text>{recipe.spoonacularScore.toFixed(2)} calorias</Text>
+          </View>
         </View>
-        <View style={styles.infoItem}>
-          <Ionicons name="time-outline" size={24} color="black" />
-          <Text>45 min</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Ionicons name="flame-outline" size={24} color="black" />
-          <Text>270 kcal</Text>
-        </View>
-      </View>
-      <Text style={styles.title}>Bosintang</Text>
-      <Text style={styles.description}>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-        velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
-        occaecat cupidatat non proident, sunt in culpa qui officia deserunt
-        mollit anim id est laborum
-      </Text>
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/(tabs)/telaCapturaImagem')}>
-        <Text style={styles.buttonText}>Tirar foto</Text>
-      </TouchableOpacity>
-      <Footer></Footer>
+        <Text style={styles.title}>{recipe.title}</Text>
+        <Text style={styles.description}>{removeHtmlTags(recipe.summary)}</Text>
+        <TouchableOpacity style={styles.button} onPress={() => router.push('/(tabs)/telaCapturaImagem')}>
+          <Text style={styles.buttonText}>Tirar foto</Text>
+        </TouchableOpacity>
+      </ScrollView>
+      <Footer />
     </View>
   );
 }
@@ -68,30 +116,29 @@ export default function telaSugestaoDiaReceita() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignContent: "center",
     padding: 20,
     backgroundColor: "#fff",
   },
   greeting: {
     fontSize: 24,
     fontWeight: "bold",
+    marginVertical: 10,
   },
   iconConfig: {
-    //icone de configurações
     position: "absolute",
-    top: 68,
-    right: 20,
+    top: 25,
+    right: 10,
   },
   suggestion: {
-    fontSize: 18,
+    fontSize: 16,
     marginVertical: 10,
+    marginTop: -10,
   },
   dishImage: {
     width: "100%",
     height: 200,
     borderRadius: 10,
-    marginVertical: 10,
+    marginVertical: 20,
   },
   infoContainer: {
     flexDirection: "row",
@@ -100,15 +147,17 @@ const styles = StyleSheet.create({
   },
   infoItem: {
     alignItems: "center",
+    padding: 10,
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
     marginVertical: 10,
   },
   description: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#666",
+    marginBottom: 20,
   },
   button: {
     backgroundColor: "red",
@@ -124,13 +173,17 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
     position: "absolute",
-    top: 48,
+    top: 25,
+    left: 0,
+    zIndex: 1,
   },
   backButtonText: {
-    marginLeft: 8,
+    marginLeft: 4,
     fontSize: 16,
     color: "black",
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
 });
