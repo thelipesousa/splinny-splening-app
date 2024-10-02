@@ -10,14 +10,14 @@ export default function Footer(){
     setActiveTab(tab);
     // Você pode adicionar navegação aqui se necessário
     if (tab === 'TelaInicial'){
-        router.push('./index');
+        router.push('/(tabs)');
     }
     if (tab === 'Favoritos'){
         router.push('./telaFavoritos');
     }
-    if (tab === 'Usuário'){
-        router.push('./telaUsuario')
-    }
+    if (tab === 'TelaSugestaoDia'){
+      router.push('./telaSugestaoDiaReceita'); // Navega para a tela de sugestão do dia
+  }
     if (tab === 'VistoRecentemente'){
         router.push('./telaVistoRecentemente')
     }
@@ -44,11 +44,11 @@ export default function Footer(){
         />
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => handlePress('Usuário')}>
+      <TouchableOpacity onPress={() => handlePress('TelaSugestaoDia')}>
         <MaterialIcons
-          name="person"
+          name="restaurant"
           size={30}
-          color={activeTab === 'Usuário' ? 'red' : 'gray'}
+          color={activeTab === 'TelaSugestaoDia' ? 'red' : 'gray'}
         />
       </TouchableOpacity>
 
