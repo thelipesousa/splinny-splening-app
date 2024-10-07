@@ -1,100 +1,108 @@
 import React from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import Header from '@/components/header';
+import Footer from '@/components/footer';
 
 interface Recipe {
-    id: string;
-    name: string;
-    image: string;
+  id: number;
+  title: string;
+  image: string;
 }
 
-const favoriteRecipes: Recipe[] = [
-    {
-        id: '1',
-        name: 'Spaghetti Carbonara',
-        image: 'https://example.com/spaghetti.jpg',
-    },
-    {
-        id: '2',
-        name: 'Chicken Curry',
-        image: 'https://example.com/chicken-curry.jpg',
-    },
-    {
-        id: '3',
-        name: 'Vegetable Stir Fry',
-        image: 'https://example.com/vegetable-stir-fry.jpg',
-    },
-    // Adicione mais receitas conforme necessário
-];
+export default function Favoritos({ favoriteRecipes, toggleFavorite }: { favoriteRecipes: Recipe[], toggleFavorite: (recipe: Recipe) => void }) {
+  const router = useRouter();
 
-export default function Favoritos() {
-    const router = useRouter();
-    const navitation = useNavigation();
+  const openRecipeDetails = (recipe: Recipe) => {
+    router.push({
+      pathname: '/telaDetalheReceita', // Nome da rota para os detalhes da receita
+      params: { id: recipe.id, name: recipe.title, image: recipe.image }, // Passa os parâmetros
+    });
+  };
 
-    const renderRecipeItem = ({ item }: { item: Recipe }) => (
-        <TouchableOpacity style={styles.recipeItem} >
-            <Image source={{ uri: item.image }} style={styles.recipeImage} />
-            <Text style={styles.recipeName}>{item.name}</Text>
-        </TouchableOpacity>
-    );
-
-    const handleGoBack = () => {
-        navitation.goBack();
-    };
-
-    return (
-        <View className='py-12' style={styles.container}>
-            <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-        <MaterialIcons className="py-8" name="arrow-back-ios" size={18} color="black" />
-        <Text style={styles.backButtonText}>Voltar</Text>
+  const renderRecipeItem = ({ item }: { item: Recipe }) => (
+    <TouchableOpacity
+      style={styles.recipeItem}
+      onPress={() => openRecipeDetails(item)} // Abre a tela de detalhes da receita
+    >
+      <Image source={{ uri: item.image }} style={styles.recipeImage} />
+      <Text style={styles.recipeName}>{item.title}</Text>
+      <TouchableOpacity style={styles.favoriteButton} onPress={() => toggleFavorite(item)}>
+        <MaterialIcons
+          name={favoriteRecipes.some((favRecipe) => favRecipe.id === item.id) ? 'favorite' : 'favorite-border'}
+          size={24}
+          color="red"
+        />
       </TouchableOpacity>
-            <Text style={styles.title}>Receitas Favoritas</Text>
-            <FlatList
-                data={favoriteRecipes}
-                renderItem={renderRecipeItem}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.listContainer}
-            />
-        </View>
-    );
-};
+    </TouchableOpacity>
+  );
+
+  return (
+    <View style={styles.container}>
+      <Header></Header>
+      <Text style={styles.title}>Receitas Favoritas</Text>
+      {favoriteRecipes ? (
+        <FlatList
+          data={favoriteRecipes} // Exibe apenas as receitas favoritas
+          renderItem={renderRecipeItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContainer}
+        />
+      ) : (
+        <Text style={styles.emptyText}>Nenhuma receita favorita.</Text> // Texto se não houver favoritos
+      )}
+      <Footer></Footer>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        padding: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    listContainer: {
-        paddingBottom: 20,
-    },
-    recipeItem: {
-        marginBottom: 20,
-        borderRadius: 10,
-        overflow: 'hidden',
-        backgroundColor: '#f8f8f8',
-        elevation: 2, // Adiciona sombra no Android
-    },
-    recipeImage: {
-        width: '100%',
-        height: 200,
-        resizeMode: 'cover',
-    },
-    recipeName: {
-        padding: 10,
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-        textAlign: 'center',
-    },
-     backButton: {
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  listContainer: {
+    paddingBottom: 20,
+  },
+  recipeItem: {
+    marginBottom: 20,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#f8f8f8',
+    elevation: 2,
+  },
+  recipeImage: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover',
+  },
+  recipeName: {
+    padding: 10,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+  },
+  favoriteButton: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#888',
+  },
+  backButton: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
@@ -105,4 +113,3 @@ const styles = StyleSheet.create({
     color: "black",
   },
 });
-

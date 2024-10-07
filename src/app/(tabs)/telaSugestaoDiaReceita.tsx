@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView } from "react-native";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { router, useNavigation } from "expo-router";
 import Footer from "@/components/footer";
 import { getRandomRecipe } from "../../../api/src/routes/apiRoute";
 import { translateText } from "../../../api/src/controllers/translateController";
 import Header from "@/components/header";
+import Loading from "@/components/loading";
 
 interface Recipe {
   id: number;
@@ -18,21 +19,20 @@ interface Recipe {
 }
 
 export default function TelaSugestaoDiaReceita() {
-  const navigation = useNavigation();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const handleGoBack = () => {
-    navigation.goBack();
-  };
 
   const fetchRandomRecipe = async () => {
     try {
       const recipeData = await getRandomRecipe();
 
+      // Remove tags HTML do sumário antes da tradução
+      const cleanSummary = removeHtmlTags(recipeData.summary);
+
       // Tradução do sumário da receita
-      console.log('Recebido summary antes da tradução:', recipeData.summary);
-      const translatedSummary = await translateText(recipeData.summary, 'pt');
+      console.log('Recebido summary antes da tradução:', cleanSummary);
+      const translatedSummary = await translateText(cleanSummary, 'pt');
       console.log('Summary traduzido:', translatedSummary);
 
       // Atualiza o estado com o resumo traduzido
@@ -54,15 +54,16 @@ export default function TelaSugestaoDiaReceita() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <Text>Carregando receita...</Text>
+      <View style={styles.loadingRecipes}>
+        <Text>Carregando receita... Aguarde</Text>
+        <Loading></Loading>
       </View>
     );
   }
 
   if (!recipe) {
     return (
-      <View style={styles.container}>
+      <View style={styles.loadingRecipes}>
         <Text>Erro ao carregar receita.</Text>
       </View>
     );
@@ -70,23 +71,10 @@ export default function TelaSugestaoDiaReceita() {
 
   return (
     <View style={styles.container}>
-      <Header></Header>
-      <ScrollView contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}> 
-        {/* <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-          <MaterialIcons name="arrow-back-ios" size={18} color="black" />
-          <Text style={styles.backButtonText}>Voltar</Text>
-        </TouchableOpacity> */}
+      <Header />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Text style={styles.greeting}>Olá, visitante!</Text>
-        {/* <Ionicons
-          name="settings-outline"
-          size={24}
-          color="black"
-          style={styles.iconConfig}
-        /> */}
-        <Text style={styles.suggestion}>
-          Sugestão do dia. Dê uma olhada na receita:
-        </Text>
+        <Text style={styles.suggestion}>Sugestão do dia. Dê uma olhada na receita:</Text>
         <Image source={{ uri: recipe.image }} style={styles.dishImage} />
         <View style={styles.infoContainer}>
           <View style={styles.infoItem}>
@@ -103,7 +91,7 @@ export default function TelaSugestaoDiaReceita() {
           </View>
         </View>
         <Text style={styles.title}>{recipe.title}</Text>
-        <Text style={styles.description}>{removeHtmlTags(recipe.summary)}</Text>
+        <Text style={styles.description}>{recipe.summary}</Text>
         <TouchableOpacity style={styles.button} onPress={() => router.push('/(tabs)/telaCapturaImagem')}>
           <Text style={styles.buttonText}>Tirar foto</Text>
         </TouchableOpacity>
@@ -118,6 +106,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#fff",
+  },
+  loadingRecipes: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   greeting: {
     fontSize: 24,

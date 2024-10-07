@@ -1,30 +1,18 @@
-// src/screens/TelaCapturaImagem.tsx
-
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 import { selectImageFromGallery, takePhotoWithCamera } from "../../../src/controllers/imageController";
-import { useNavigation, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import Footer from "@/components/footer";
+import Header from "@/components/header";
 
 export default function TelaCapturaImagem() {
   const [selectedImage, setSelectedImage] = useState<{ localUri: string } | null>(null);
   const router = useRouter();
-  const navigation = useNavigation();
-
-  const handleGoBack = () => {
-    navigation.goBack();
-  }
 
   const handleSelectImage = async () => {
     const imageUri = await selectImageFromGallery();
     if (imageUri) {
       setSelectedImage({ localUri: imageUri });
-      // Navega para a tela de loading passando a URI da imagem
-      router.push({
-        pathname: "./telaLoading",
-        params: { imageUri },
-      });
     }
   };
 
@@ -32,22 +20,24 @@ export default function TelaCapturaImagem() {
     const imageUri = await takePhotoWithCamera();
     if (imageUri) {
       setSelectedImage({ localUri: imageUri });
+    }
+  };
+
+  const handleContinue = () => {
+    if (selectedImage) {
       // Navega para a tela de loading passando a URI da imagem
       router.push({
-        pathname: "./telaLoading",
-        params: { imageUri },
+        pathname: "/(tabs)/telaLoading",
+        params: { imageUri: selectedImage.localUri },
       });
     }
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-        <MaterialIcons name="arrow-back-ios" size={18} color="black" />
-        <Text style={styles.backButtonText}>Voltar</Text>
-      </TouchableOpacity>
+      <Header></Header>
       <View style={styles.content}>
-        <Text style={styles.title}>Tela Captura de Imagem</Text>
+        <Text style={styles.title}>Escolha uma foto:</Text>
 
         {selectedImage ? (
           <Image source={{ uri: selectedImage.localUri }} style={styles.image} />
@@ -63,26 +53,12 @@ export default function TelaCapturaImagem() {
           <Text style={styles.buttonText}>Tirar Foto</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity className=""
-        onPress={() => router.push("./telaResultadosPesquisa")}
-        style={styles.button}
-      >
-        <Text style={styles.buttonText}>Encontrar receitas</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity className=""
-        onPress={() => router.push("./telaExibirReceita")}
-        style={styles.button}
-      >
-        <Text style={styles.buttonText}>Exibir Receita</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity className=""
-        onPress={() => router.push("./telaPesquisa")}
-        style={styles.button}
-      >
-        <Text style={styles.buttonText}>Tela Pesquisa</Text>
-      </TouchableOpacity>
+        {/* Exibe o botão "Continuar" apenas se uma imagem foi selecionada */}
+        {selectedImage && (
+          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+            <Text style={styles.continueButtonText}>Analisar imagem</Text>
+          </TouchableOpacity>
+        )}
       </View>
       <Footer></Footer>
     </View>
@@ -96,18 +72,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignContent: "center",
     padding: 20,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    position: "absolute",
-    top: 48,
-  },
-  backButtonText: {
-    marginLeft: 8,
-    fontSize: 16,
-    color: "black",
   },
   content: {
     flex: 1,
@@ -125,10 +89,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: "#000000",
-    padding: 10,
+    backgroundColor: "red",
+    padding: 15,
     marginBottom: 10,
-    borderRadius: 5,
+    borderRadius: 10,
+    alignItems: "center",
   },
   buttonText: {
     color: "white",
@@ -140,5 +105,16 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
     marginTop: 20,
     marginBottom: 20,
+  },
+  continueButton: {
+    backgroundColor: "red",
+    padding: 15,
+    marginTop: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  continueButtonText: {
+    color: "white",
+    fontSize: 16,
   },
 });

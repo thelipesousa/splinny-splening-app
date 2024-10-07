@@ -1,33 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
-import axiosClient from "../../../api/src/utils/axiosClient";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 interface Receita {
-  _id: string;
-  name: string;
+  id: string; // Alterado para Spoonacular
+  title: string;
   ingredients: string[];
   instructions: string;
 }
 
-export default function TestReceitas() {
+export default function TelaReceitas() {
   const [receitas, setReceitas] = useState<Receita[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchReceitas = async () => {
-      try {
-        const response = await axiosClient.get("/recipes");
-        console.log("Receitas recebidas:", response.data);  // Verifique se isso aparece corretamente
-        setReceitas(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar receitas:", error);  // Verifique se há algum erro específico
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Usar o hook para pegar os parâmetros passados pela tela de loading
+  const { receitas: receitasParam } = useLocalSearchParams();
 
-    fetchReceitas();
-  }, []);
+  useEffect(() => {
+    if (receitasParam) {
+      // Parsear as receitas vindas dos parâmetros
+      const receitasList = JSON.parse(receitasParam as string);
+      setReceitas(receitasList);
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
+    }
+  }, [receitasParam]);
 
   if (isLoading) {
     return <Text>Carregando...</Text>;
@@ -39,10 +37,10 @@ export default function TestReceitas() {
       {receitas.length > 0 ? (
         <FlatList
           data={receitas}
-          keyExtractor={(item) => item._id.toString()}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <View style={styles.receitaContainer}>
-              <Text style={styles.receitaTitle}>{item.name}</Text>
+              <Text style={styles.receitaTitle}>{item.title}</Text>
               <Text style={styles.subtitle}>Ingredientes:</Text>
               {item.ingredients.map((ing, index) => (
                 <Text key={index} style={styles.ingredient}>• {ing}</Text>

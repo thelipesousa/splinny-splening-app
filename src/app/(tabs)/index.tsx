@@ -68,23 +68,24 @@ export default function Home() {
           <Image
             source={require("../../../assets/images/splinny.png")}
             className="w-80 h-80 rounded-full"
-          />
+            />
         </Animated.View>
       </Animated.View>
       <View className="py-16">
          {/* Botão Começar*/}
          {/* <TouchableOpacity onPress={handlePress}
         style={styles.button}
-      >
+        >
         <Text style={styles.buttonText}>Começar!</Text>
-      </TouchableOpacity> */}
+        </TouchableOpacity> */}
 
       {loading && (
-          <View style={styles.loadingContainer}>
+        <View style={styles.loadingContainer}>
             <Loading />
           </View>
       )}
       </View>
+      <Loading></Loading>
     </ScrollView>
   );
 }

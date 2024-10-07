@@ -18,11 +18,14 @@ export default function Footer(){
     if (tab === 'TelaSugestaoDia'){
       router.push('./telaSugestaoDiaReceita'); // Navega para a tela de sugestão do dia
   }
-    if (tab === 'VistoRecentemente'){
-        router.push('./telaVistoRecentemente')
-    }
+    // if (tab === 'VistoRecentemente'){
+    //     router.push('./telaVistoRecentemente')
+    // }
     if (tab === 'Pesquisa'){
         router.push('./telaPesquisa')
+    }
+    if (tab === 'CapturaImagem') {
+      router.push('./telaCapturaImagem'); // Navega para a tela de captura de imagem
     }
   };
 
@@ -33,6 +36,14 @@ export default function Footer(){
           name="home"
           size={30}
           color={activeTab === 'TelaInicial' ? 'red' : 'gray'}
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => handlePress('CapturaImagem')}>
+        <MaterialIcons
+          name="photo-camera"
+          size={30}
+          color={activeTab === 'CapturaImagem' ? 'red' : 'gray'}
         />
       </TouchableOpacity>
 
@@ -53,13 +64,13 @@ export default function Footer(){
       </TouchableOpacity>
 
 
-      <TouchableOpacity onPress={() => handlePress('VistoRecentemente')}>
+      {/* <TouchableOpacity onPress={() => handlePress('VistoRecentemente')}>
         <MaterialIcons
           name="history"
           size={30}
           color={activeTab === 'VistoRecentemente' ? 'red' : 'gray'}
         />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <TouchableOpacity onPress={() => handlePress('Pesquisa')}>
         <MaterialIcons
