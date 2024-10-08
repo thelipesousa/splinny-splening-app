@@ -1,29 +1,21 @@
+// translateController.ts
 import axios from 'axios';
 
-export const translateText = async (text: string, targetLanguage: string = 'pt') => {
+const DEEPL_API_URL = 'https://api-free.deepl.com/v2/translate';
+const DEEPL_AUTH_KEY = "c229525b-4c8e-4bfb-a3c6-461a884cba13:fx" // Armazene sua chave de autenticação no .env
+
+export const translateText = async (text: string, targetLang: string) => {
   try {
-    const response = await axios.post('https://libretranslate.de/translate', {
-      q: text,          // Texto a ser traduzido
-      source: 'en',     // Idioma de origem
-      target: targetLanguage, // Idioma de destino (Português)
-      format: 'text',
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await axios.post(DEEPL_API_URL, null, {
+      params: {
+        auth_key: DEEPL_AUTH_KEY,
+        text: text,
+        target_lang: targetLang.toUpperCase(), // DeepL usa códigos de idioma em maiúsculas
       },
     });
-
-    // Log da resposta completa
-    console.log("Response data:", response.data);
-
-    // Verifica se a resposta contém o campo `translatedText`
-    if (response.data && response.data.translatedText) {
-      return response.data.translatedText;
-    } else {
-      throw new Error('A resposta da API não contém o campo translatedText.');
-    }
-  } catch (error: any) {
-    console.error('Erro ao tentar traduzir:', error?.response?.data || error.message);
-    return text; // Retorna o texto original se a tradução falhar
+    return response.data.translations[0].text; // Retorna o texto traduzido
+  } catch (error) {
+    console.error('Erro ao traduzir o texto:', error);
+    throw new Error('Não foi possível traduzir o texto.');
   }
 };

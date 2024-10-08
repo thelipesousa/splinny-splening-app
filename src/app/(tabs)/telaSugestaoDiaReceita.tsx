@@ -26,17 +26,19 @@ export default function TelaSugestaoDiaReceita() {
   const fetchRandomRecipe = async () => {
     try {
       const recipeData = await getRandomRecipe();
-
-      // Remove tags HTML do sumário antes da tradução
       const cleanSummary = removeHtmlTags(recipeData.summary);
+      const cleanTitle = recipeData.title; 
 
+      console.log('Recebido título antes da tradução:', cleanTitle);
+      const translatedTitle = await translateText(cleanTitle, 'pt');
+      console.log('Título traduzido:', translatedTitle);
+      
       // Tradução do sumário da receita
       console.log('Recebido summary antes da tradução:', cleanSummary);
       const translatedSummary = await translateText(cleanSummary, 'pt');
       console.log('Summary traduzido:', translatedSummary);
-
-      // Atualiza o estado com o resumo traduzido
-      setRecipe({ ...recipeData, summary: translatedSummary });
+  
+      setRecipe({ ...recipeData, title: translatedTitle, summary: translatedSummary });
     } catch (error) {
       console.error('Erro ao buscar receita ou traduzir:', error);
     } finally {
