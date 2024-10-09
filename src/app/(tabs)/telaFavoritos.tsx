@@ -1,58 +1,41 @@
 import React from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import Header from '@/components/header';
+import { View, Text, FlatList, Image, StyleSheet } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import Footer from '@/components/footer';
+import Header from '@/components/header';
 
-interface Recipe {
+interface Receita {
   id: number;
   title: string;
   image: string;
 }
 
-export default function Favoritos({ favoriteRecipes, toggleFavorite }: { favoriteRecipes: Recipe[], toggleFavorite: (recipe: Recipe) => void }) {
-  const router = useRouter();
+export default function Favoritos() {
+  const { favoriteRecipes } = useLocalSearchParams(); // Obtém os parâmetros da navegação
+  const favoritesList: Receita[] = favoriteRecipes ? JSON.parse(favoriteRecipes as string) : []; // Parse do JSON recebido
 
-  const openRecipeDetails = (recipe: Recipe) => {
-    router.push({
-      pathname: '/telaDetalheReceita', // Nome da rota para os detalhes da receita
-      params: { id: recipe.id, name: recipe.title, image: recipe.image }, // Passa os parâmetros
-    });
-  };
-
-  const renderRecipeItem = ({ item }: { item: Recipe }) => (
-    <TouchableOpacity
-      style={styles.recipeItem}
-      onPress={() => openRecipeDetails(item)} // Abre a tela de detalhes da receita
-    >
+  const renderRecipeItem = ({ item }: { item: Receita }) => (
+    <View style={styles.recipeItem}>
       <Image source={{ uri: item.image }} style={styles.recipeImage} />
       <Text style={styles.recipeName}>{item.title}</Text>
-      <TouchableOpacity style={styles.favoriteButton} onPress={() => toggleFavorite(item)}>
-        <MaterialIcons
-          name={favoriteRecipes.some((favRecipe) => favRecipe.id === item.id) ? 'favorite' : 'favorite-border'}
-          size={24}
-          color="red"
-        />
-      </TouchableOpacity>
-    </TouchableOpacity>
+    </View>
   );
 
   return (
     <View style={styles.container}>
-      <Header></Header>
+      <Header/>
       <Text style={styles.title}>Receitas Favoritas</Text>
-      {favoriteRecipes ? (
+      {favoritesList.length > 0 ? (
         <FlatList
-          data={favoriteRecipes} // Exibe apenas as receitas favoritas
+          data={favoritesList}
           renderItem={renderRecipeItem}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContainer}
         />
       ) : (
-        <Text style={styles.emptyText}>Nenhuma receita favorita.</Text> // Texto se não houver favoritos
+        <Text style={styles.emptyText}>Nenhuma receita favorita.</Text>
       )}
-      <Footer></Footer>
+      <Footer/>
     </View>
   );
 }
@@ -88,28 +71,10 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
-  },
-  favoriteButton: {
-    position: 'absolute',
-    right: 10,
-    top: 10,
   },
   emptyText: {
     textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-    color: '#888',
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-  },
-  backButtonText: {
-    marginLeft: 8,
-    fontSize: 16,
-    color: "black",
+    fontSize: 18,
+    color: '#777',
   },
 });

@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { fetchReceitas } from '../../../api/src/controllers/recipeSearch';
 import Footer from '@/components/footer';
 import Header from '@/components/header';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa o AsyncStorage
 
 interface Receita {
   id: number;
@@ -14,21 +16,69 @@ interface Receita {
   sourceUrl: string;
 }
 
-export default function TelaPesquisa({ favoriteRecipes = [], toggleFavorite }: { favoriteRecipes: Receita[], toggleFavorite: (recipe: Receita) => void }) {
-  const [searchQuery, setSearchQuery] = useState(''); // Estado para armazenar a consulta de busca
-  const [receitas, setReceitas] = useState<Receita[]>([]); // Armazena as receitas buscadas
-  const [isLoading, setIsLoading] = useState(false); // Estado de carregamento
+export default function TelaPesquisa() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [receitas, setReceitas] = useState<Receita[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [favoriteRecipes, setFavoriteRecipes] = useState<Receita[]>([]);
+  const router = useRouter();
 
-  // Função chamada ao clicar no botão de buscar
-  const handleSearch = async () => {
-    setIsLoading(true); // Inicia o loading
+  // Função para armazenar favoritos no AsyncStorage
+  const storeFavorites = async (favorites: Receita[]) => {
     try {
-      const resultados = await fetchReceitas(searchQuery); // Chama a função da controller
-      setReceitas(resultados); // Atualiza o estado com as receitas obtidas
+      const jsonValue = JSON.stringify(favorites);
+      await AsyncStorage.setItem('@favorite_recipes', jsonValue); // Armazena como string JSON
+    } catch (e) {
+      console.error('Erro ao armazenar favoritos:', e);
+    }
+  };
+
+  // Função para carregar favoritos do AsyncStorage
+  const loadFavorites = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('@favorite_recipes');
+      if (jsonValue !== null) {
+        setFavoriteRecipes(JSON.parse(jsonValue)); // Atualiza o estado com os favoritos carregados
+      }
+    } catch (e) {
+      console.error('Erro ao carregar favoritos:', e);
+    }
+  };
+
+  useEffect(() => {
+    loadFavorites(); // Carrega os favoritos ao iniciar a tela
+  }, []);
+
+  const handleSearch = async () => {
+    setIsLoading(true);
+    try {
+      const resultados = await fetchReceitas(searchQuery);
+      setReceitas(resultados);
     } catch (error) {
       console.error('Erro ao buscar receitas:', error);
     } finally {
-      setIsLoading(false); // Finaliza o loading
+      setIsLoading(false);
+    }
+  };
+
+  const toggleFavorite = (recipe: Receita) => {
+    const isFavorite = favoriteRecipes.some((favRecipe) => favRecipe.id === recipe.id);
+    
+    if (isFavorite) {
+      // Remove da lista de favoritos
+      const updatedFavorites = favoriteRecipes.filter((favRecipe) => favRecipe.id !== recipe.id);
+      setFavoriteRecipes(updatedFavorites);
+      storeFavorites(updatedFavorites); // Atualiza o armazenamento com a lista atualizada
+    } else {
+      // Adiciona à lista de favoritos
+      const updatedFavorites = [...favoriteRecipes, recipe];
+      setFavoriteRecipes(updatedFavorites);
+      storeFavorites(updatedFavorites); // Atualiza o armazenamento com a nova lista de favoritos
+      // Navega para a tela de favoritos passando as receitas favoritas como parâmetro
+      router.push({
+        pathname: '/(tabs)/telaFavoritos',
+        params: { favoriteRecipes: JSON.stringify(updatedFavorites) },
+      });
     }
   };
 
@@ -42,7 +92,6 @@ export default function TelaPesquisa({ favoriteRecipes = [], toggleFavorite }: {
         <Text>Porções: {item.servings}</Text>
         <Text>Veja mais: {item.sourceUrl}</Text>
 
-        {/* Botão de Favoritar */}
         <TouchableOpacity onPress={() => toggleFavorite(item)} style={styles.favoriteButton}>
           <MaterialIcons name={isFavorite ? 'favorite' : 'favorite-border'} size={24} color="red" />
         </TouchableOpacity>
@@ -53,12 +102,11 @@ export default function TelaPesquisa({ favoriteRecipes = [], toggleFavorite }: {
   return (
     <View style={styles.container}>
       <Header />
-      {/* Título da tela */}
+
       <View style={styles.header}>
         <Text style={styles.title}>Buscar Receitas</Text>
       </View>
 
-      {/* Campo de busca */}
       <TextInput
         style={styles.input}
         placeholder="Digite o nome da receita"
@@ -66,12 +114,10 @@ export default function TelaPesquisa({ favoriteRecipes = [], toggleFavorite }: {
         onChangeText={setSearchQuery}
       />
 
-      {/* Botão de busca */}
       <TouchableOpacity onPress={handleSearch} style={styles.searchButton}>
         <Text style={styles.searchButtonText}>Buscar</Text>
       </TouchableOpacity>
 
-      {/* Lista de receitas */}
       {isLoading ? (
         <Text>Carregando...</Text>
       ) : (
@@ -82,6 +128,7 @@ export default function TelaPesquisa({ favoriteRecipes = [], toggleFavorite }: {
           contentContainerStyle={styles.contentContainer}
         />
       )}
+
       <Footer />
     </View>
   );
@@ -134,14 +181,14 @@ const styles = StyleSheet.create({
     top: 10,
   },
   searchButton: {
-    backgroundColor: 'red', // Cor de fundo do botão
-    padding: 12, // Espaçamento interno
-    borderRadius: 4, // Bordas arredondadas
-    alignItems: 'center', // Centraliza o texto horizontalmente
+    backgroundColor: 'red',
+    padding: 12,
+    borderRadius: 4,
+    alignItems: 'center',
   },
   searchButtonText: {
-    color: '#fff', // Cor do texto do botão
-    fontSize: 16, // Tamanho da fonte
-    fontWeight: 'bold', // Negrito
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
