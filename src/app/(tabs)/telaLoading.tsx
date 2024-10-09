@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import axios from "axios";
-import axiosClient from "../../../api/src/utils/axiosClient";
 import NetInfo from "@react-native-community/netinfo";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
-
+import apiSpoonacular from "../../../api/src/utils/apiSpoonacular";
+import aiService from "../../../api/src/services/aiService"; // Importa o serviço de IA
 
 export default function TelaLoading() {
   const router = useRouter();
@@ -21,6 +21,25 @@ export default function TelaLoading() {
       return netInfo.isConnected;
     };
 
+    // Função para adicionar o timeout
+    const timeoutPromise = (ms: number, promise: Promise<any>) => {
+      return new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          reject(new Error("Tempo limite atingido. Tente novamente."));
+        }, ms);
+
+        promise
+          .then((res) => {
+            clearTimeout(timeoutId);
+            resolve(res);
+          })
+          .catch((err) => {
+            clearTimeout(timeoutId);
+            reject(err);
+          });
+      });
+    };
+
     const processImageAndFetchReceitas = async () => {
       try {
         setIsLoading(true);
@@ -31,14 +50,20 @@ export default function TelaLoading() {
           throw new Error("Sem conexão com a internet");
         }
 
-        // Enviar imagem para a IA
+        // Definindo o timeout para a análise de imagem, por exemplo, 10 segundos (10000 ms)
+        const timeoutDuration = 10000;
+
+        // Enviar imagem para a IA com timeout
         console.log("Enviando imagem para a IA...");
-        const alimentoReconhecido = await aiService.sendImageToAI(image);
+        const alimentoReconhecido = await timeoutPromise(
+          timeoutDuration,
+          aiService.sendImageToAI(image)
+        );
         console.log("Alimento reconhecido pela IA:", alimentoReconhecido);
 
         // Busca de receitas com o alimento reconhecido
         console.log("Buscando receitas para o alimento:", alimentoReconhecido);
-        const response = await axiosClient.get(`/recipes`, {
+        const response = await apiSpoonacular.get(`/recipes`, {
           params: {
             query: alimentoReconhecido,  // Alimento reconhecido pela IA
             number: 10,  // Quantidade de receitas
@@ -97,6 +122,7 @@ export default function TelaLoading() {
     </View>
   );
 }
+console.log("Tempo tentando reconhecer imagem enviada: ", setTimeout)
 
 const styles = StyleSheet.create({
   container: {
