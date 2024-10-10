@@ -1,31 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 
-export default function Footer(){
+export default function Footer() {
   const [activeTab, setActiveTab] = useState('TelaInicial');
+  const router = useRouter();
+  const pathname = usePathname();  // Obtém a rota atual
+
+  useEffect(() => {
+    // Verifica qual é a rota atual e ajusta o ícone ativo
+    if (pathname.includes('telaFavoritos')) {
+      setActiveTab('Favoritos');
+    } else if (pathname.includes('telaSugestaoDiaReceita')) {
+      setActiveTab('TelaSugestaoDia');
+    } else if (pathname.includes('telaPesquisa')) {
+      setActiveTab('Pesquisa');
+    } else if (pathname.includes('telaCapturaImagem')) {
+      setActiveTab('CapturaImagem');
+    } else {
+      setActiveTab('TelaInicial');
+    }
+  }, [pathname]);
 
   const handlePress = (tab: string) => {
     setActiveTab(tab);
-    // Você pode adicionar navegação aqui se necessário
-    if (tab === 'TelaInicial'){
-        router.push('/(tabs)');
+    if (tab === 'TelaInicial') {
+      router.push('/(tabs)');
     }
-    if (tab === 'Favoritos'){
-        router.push('./telaFavoritos');
+    if (tab === 'Favoritos') {
+      router.push('./telaFavoritos');
     }
-    if (tab === 'TelaSugestaoDia'){
-      router.push('./telaSugestaoDiaReceita'); // Navega para a tela de sugestão do dia
-  }
-    // if (tab === 'VistoRecentemente'){
-    //     router.push('./telaVistoRecentemente')
-    // }
-    if (tab === 'Pesquisa'){
-        router.push('./telaPesquisa')
+    if (tab === 'TelaSugestaoDia') {
+      router.push('./telaSugestaoDiaReceita');
+    }
+    if (tab === 'Pesquisa') {
+      router.push('./telaPesquisa');
     }
     if (tab === 'CapturaImagem') {
-      router.push('./telaCapturaImagem'); // Navega para a tela de captura de imagem
+      router.push('./telaCapturaImagem');
     }
   };
 
@@ -63,15 +76,6 @@ export default function Footer(){
         />
       </TouchableOpacity>
 
-
-      {/* <TouchableOpacity onPress={() => handlePress('VistoRecentemente')}>
-        <MaterialIcons
-          name="history"
-          size={30}
-          color={activeTab === 'VistoRecentemente' ? 'red' : 'gray'}
-        />
-      </TouchableOpacity> */}
-
       <TouchableOpacity onPress={() => handlePress('Pesquisa')}>
         <MaterialIcons
           name="search"
@@ -81,20 +85,18 @@ export default function Footer(){
       </TouchableOpacity>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-    footer: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      alignItems: 'center',
-      backgroundColor: '#fff',
-      paddingVertical: 10,
-      position: 'absolute',
-      bottom: 20,
-      left: 20,
-      right: 20,
-      
-    
-    },
-  });
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 10,
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+  },
+});
