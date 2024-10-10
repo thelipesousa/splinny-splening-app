@@ -1,49 +1,56 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from "react-native";
 import { selectImageFromGallery, takePhotoWithCamera } from "../../../src/controllers/imageController";
 import { useRouter } from "expo-router";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 
 export default function TelaCapturaImagem() {
-  const [selectedImage, setSelectedImage] = useState<{ localUri: string } | null>(null);
+  const [selectedImages, setSelectedImages] = useState<{ localUri: string }[]>([]);
   const router = useRouter();
 
   const handleSelectImage = async () => {
     const imageUri = await selectImageFromGallery();
     if (imageUri) {
-      setSelectedImage({ localUri: imageUri });
+      setSelectedImages(prevImages => [...prevImages, { localUri: imageUri }]);
     }
   };
 
   const handleTakePhoto = async () => {
     const imageUri = await takePhotoWithCamera();
     if (imageUri) {
-      setSelectedImage({ localUri: imageUri });
+      setSelectedImages(prevImages => [...prevImages, { localUri: imageUri }]);
     }
   };
 
   const handleContinue = () => {
-    if (selectedImage) {
-      // Navega para a tela de loading passando a URI da imagem
+    if (selectedImages.length > 0) {
+      // Navega para a tela de loading passando as URIs das imagens
       router.push({
         pathname: "/(tabs)/telaLoading",
-        params: { imageUri: selectedImage.localUri },
+        params: { imageUris: selectedImages.map(img => img.localUri) },
       });
     }
   };
 
   return (
     <View style={styles.container}>
-      <Header></Header>
+      <Header />
       <View style={styles.content}>
-        <Text style={styles.title}>Escolha uma foto:</Text>
+        <Text style={styles.title}>Escolha uma ou mais fotos:</Text>
 
-        {selectedImage ? (
-          <Image source={{ uri: selectedImage.localUri }} style={styles.image} />
-        ) : (
-          <Text style={styles.instructions}>Nenhuma imagem selecionada</Text>
-        )}
+        {/* Contêiner rolável para as imagens */}
+        <View style={styles.scrollContainer}>
+          <ScrollView contentContainerStyle={styles.imageContainer}>
+            {selectedImages.length > 0 ? (
+              selectedImages.map((image, index) => (
+                <Image key={index} source={{ uri: image.localUri }} style={styles.image} />
+              ))
+            ) : (
+              <Text style={styles.instructions}>Nenhuma imagem selecionada</Text>
+            )}
+          </ScrollView>
+        </View>
 
         <TouchableOpacity style={styles.button} onPress={handleSelectImage}>
           <Text style={styles.buttonText}>Escolher da Galeria</Text>
@@ -53,14 +60,14 @@ export default function TelaCapturaImagem() {
           <Text style={styles.buttonText}>Tirar Foto</Text>
         </TouchableOpacity>
 
-        {/* Exibe o botão "Continuar" apenas se uma imagem foi selecionada */}
-        {selectedImage && (
+        {/* Exibe o botão "Continuar" apenas se pelo menos uma imagem foi selecionada */}
+        {selectedImages.length > 0 && (
           <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-            <Text style={styles.continueButtonText}>Analisar imagem</Text>
+            <Text style={styles.continueButtonText}>Analisar imagens</Text>
           </TouchableOpacity>
         )}
       </View>
-      <Footer></Footer>
+      <Footer />
     </View>
   );
 }
@@ -88,30 +95,40 @@ const styles = StyleSheet.create({
     color: "black",
     marginBottom: 20,
   },
+  scrollContainer: {
+    height: 250, // Define a altura fixa para o espaço das imagens
+    width: '100%', // Ocupa toda a largura da tela
+    marginBottom: 10,
+  },
+  imageContainer: {
+    alignItems: "center",
+    paddingBottom: 20,
+  },
+  image: {
+    width: 250,
+    height: 250,
+    marginBottom: 10, // Espaço entre as imagens
+  },
   button: {
     backgroundColor: "red",
     padding: 15,
-    marginBottom: 10,
+    marginBottom: 5,
     borderRadius: 10,
     alignItems: "center",
+    marginTop: 10,
+    width: "70%",
   },
   buttonText: {
     color: "white",
     fontSize: 16,
   },
-  image: {
-    width: 200,
-    height: 200,
-    resizeMode: "cover",
-    marginTop: 20,
-    marginBottom: 20,
-  },
   continueButton: {
     backgroundColor: "red",
     padding: 15,
-    marginTop: 20,
+    marginTop: 10,
     borderRadius: 10,
     alignItems: "center",
+    width: '70%',
   },
   continueButtonText: {
     color: "white",
