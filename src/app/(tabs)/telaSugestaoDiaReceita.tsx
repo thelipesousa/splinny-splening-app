@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router, useNavigation } from "expo-router";
+import { router } from "expo-router";
 import Footer from "@/components/footer";
-import { getRandomRecipe } from "../../../api/src/routes/apiRoute";
-import { translateText } from "../../../api/src/controllers/translateController";
 import Header from "@/components/header";
 import Loading from "@/components/loading";
 
@@ -22,43 +20,29 @@ export default function TelaSugestaoDiaReceita() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-
-  const fetchRandomRecipe = async () => {
-    try {
-      const recipeData = await getRandomRecipe();
-      const cleanSummary = removeHtmlTags(recipeData.summary);
-      const cleanTitle = recipeData.title; 
-
-      console.log('Recebido título antes da tradução:', cleanTitle);
-      const translatedTitle = await translateText(cleanTitle, 'pt');
-      console.log('Título traduzido:', translatedTitle);
-      
-      // Tradução do sumário da receita
-      console.log('Recebido summary antes da tradução:', cleanSummary);
-      const translatedSummary = await translateText(cleanSummary, 'pt');
-      console.log('Summary traduzido:', translatedSummary);
-  
-      setRecipe({ ...recipeData, title: translatedTitle, summary: translatedSummary });
-    } catch (error) {
-      console.error('Erro ao buscar receita ou traduzir:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const removeHtmlTags = (text: string) => {
-    return text.replace(/<[^>]*>?/gm, ""); // Remove as tags HTML
+  const fetchMockRecipe = () => {
+    const mockRecipe: Recipe = {
+      id: 1,
+      title: "Spaghetti à Carbonara",
+      image: "https://via.placeholder.com/300.png?text=Spaghetti+Carbonara", // URL mockada para a imagem
+      readyInMinutes: 30,
+      spoonacularScore: 450,
+      vegan: false,
+      summary: "Uma deliciosa receita de Spaghetti à Carbonara, feita com ovos, queijo parmesão, pancetta e pimenta-do-reino.",
+    };
+    setRecipe(mockRecipe);
+    setLoading(false);
   };
 
   useEffect(() => {
-    fetchRandomRecipe();
+    fetchMockRecipe(); // Chame a função mockada
   }, []);
 
   if (loading) {
     return (
       <View style={styles.loadingRecipes}>
         <Text>Carregando receita... Aguarde</Text>
-        <Loading></Loading>
+        <Loading />
       </View>
     );
   }
@@ -119,11 +103,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginVertical: 10,
   },
-  iconConfig: {
-    position: "absolute",
-    top: 25,
-    right: 10,
-  },
   suggestion: {
     fontSize: 16,
     marginVertical: 10,
@@ -164,19 +143,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 18,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    position: "absolute",
-    top: 25,
-    left: 0,
-    zIndex: 1,
-  },
-  backButtonText: {
-    marginLeft: 4,
-    fontSize: 16,
-    color: "black",
   },
   scrollContent: {
     paddingBottom: 100,
