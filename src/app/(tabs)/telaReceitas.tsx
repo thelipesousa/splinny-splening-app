@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 
 interface Receita {
   id: string; // Alterado para Spoonacular
@@ -33,6 +35,7 @@ export default function TelaReceitas() {
 
   return (
     <View style={styles.container}>
+      <Header/>
       <Text style={styles.title}>Receitas sugeridas</Text>
       {receitas.length > 0 ? (
         <FlatList
@@ -53,6 +56,7 @@ export default function TelaReceitas() {
       ) : (
         <Text style={styles.noReceitas}>Nenhuma receita encontrada</Text>
       )}
+      <Footer/>
     </View>
   );
 }
@@ -62,7 +66,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     padding: 16,
-    top: 40,
   },
   title: {
     fontSize: 24,

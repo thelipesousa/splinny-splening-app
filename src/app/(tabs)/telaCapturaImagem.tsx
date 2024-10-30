@@ -28,7 +28,7 @@ export default function TelaCapturaImagem() {
       // Navega para a tela de loading passando as URIs das imagens
       router.push({
         pathname: "/(tabs)/telaLoading",
-        params: { imageUris: selectedImages.map(img => img.localUri) },
+        params: { imageUri: selectedImages[0].localUri },
       });
     }
   };
