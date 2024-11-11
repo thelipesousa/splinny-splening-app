@@ -16,12 +16,17 @@
     "dotenv": "^16.4.5",
     "expo-network": "^6.0.1",
     "express": "^4.19.2",
+    "mime": "^4.0.4",
+    "mime-types": "^2.1.35",
     "mongoose": "^8.6.1",
+    "react-native-dotenv": "^3.4.11",
     "react-native-image-resizer": "^1.4.5",
     "react-native-network-info": "^5.2.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@types/mime": "^4.0.0",
+    "@types/mime-types": "^2.1.4",
     "@types/node": "^22.5.3",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",

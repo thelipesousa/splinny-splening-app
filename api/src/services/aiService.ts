@@ -1,31 +1,47 @@
 import { Platform } from 'react-native';
+import mime from 'mime';
 
-const API_URL = 'http://64.181.180.186:8080/classificar';
+const API_URL = 'https://64.181.180.186:8080/classificar';
 
-export const sendImageToAI = async (imagemUri: string): Promise<string | null> => {
+const sendImageToAI = async (imageUri: string) => {
+  if (!imageUri) {
+    console.error('Nenhuma imagem selecionada');
+    return null;
+  }
+
   try {
-    const formData = new FormData();
+    let newImageUri = imageUri;
+    if (Platform.OS === 'android') {
+      newImageUri = imageUri.replace('file:///', '');
+    } else if (Platform.OS === 'ios') {
+      // Ajustes específicos para iOS, se necessários
+    }
 
-    formData.append('file', {
-      uri: Platform.OS === 'android' ? imagemUri : imagemUri.replace('file://', ''),
-      name: 'imagem.jpg',
-      type: 'image/jpeg',
+    const mimeType = mime.getType(newImageUri) || 'image/jpeg';
+
+    const formData = new FormData();
+    const imageResponse = await fetch(newImageUri);
+    const blob = await imageResponse.blob();
+    formData.append('image', {
+      uri: newImageUri,
+      type: mimeType,
+      name: newImageUri.split('/').pop(),
     } as any);
-    console.log("Imagem URI recebida:", imagemUri);
-    
+
+    console.log("Imagem URI ajustada:", newImageUri);
+    console.log("Tipo MIME:", mimeType);
+
     const response = await fetch(API_URL, {
       method: 'POST',
       body: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
     });
 
     if (!response.ok) {
-      throw new Error('Erro na resposta do servidor');
+      throw new Error(`Erro na resposta do servidor: ${response.status}`);
     }
 
     const responseData = await response.json();
+    console.log("Resposta do servidor:", responseData);
     return responseData.classificacao || null;
   } catch (error) {
     console.error('Erro no envio da imagem:', error);
@@ -33,4 +49,4 @@ export const sendImageToAI = async (imagemUri: string): Promise<string | null> =
   }
 };
 
-export default { sendImageToAI };
+export default{ sendImageToAI };

@@ -78,13 +78,13 @@ export default function TelaLoading() {
         const receitas = response.data;
         */
 
-        setTimeout(() => {
-          router.push({
-            pathname: "./telaReceitas",
-            // params: { receitas: JSON.stringify(receitas) }, // Parâmetro de receitas comentado
-            params: { alimentoReconhecido: JSON.stringify(alimentoReconhecido) }, // Envia apenas o alimento reconhecido
-          });
-        }, 3000);
+        // setTimeout(() => {
+        //   router.push({
+        //     pathname: "./telaReceitas",
+        //     // params: { receitas: JSON.stringify(receitas) }, // Parâmetro de receitas comentado
+        //     params: { alimentoReconhecido: JSON.stringify(alimentoReconhecido) }, // Envia apenas o alimento reconhecido
+        //   });
+        // }, 3000);
       } catch (error) {
         console.error("Erro ao processar imagem:", error);
         let message = "Erro desconhecido ao processar imagem.";
