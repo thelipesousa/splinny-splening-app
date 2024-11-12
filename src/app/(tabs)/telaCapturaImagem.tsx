@@ -2,17 +2,23 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from "react-native";
 import { selectImageFromGallery, takePhotoWithCamera } from "../../../src/controllers/imageController";
 import { useRouter } from "expo-router";
+import mime from "mime";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 
+const API_URL = 'https://d36b-179-125-213-249.ngrok-free.app/classificar';
+
 export default function TelaCapturaImagem() {
   const [selectedImages, setSelectedImages] = useState<{ localUri: string }[]>([]);
+  const [imageText, setImageText] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
   const handleSelectImage = async () => {
     const imageUri = await selectImageFromGallery();
     if (imageUri) {
       setSelectedImages(prevImages => [...prevImages, { localUri: imageUri }]);
+      console.log("Imagem selecionada da galeria:", imageUri);
     }
   };
 
@@ -20,16 +26,60 @@ export default function TelaCapturaImagem() {
     const imageUri = await takePhotoWithCamera();
     if (imageUri) {
       setSelectedImages(prevImages => [...prevImages, { localUri: imageUri }]);
+      console.log("Foto tirada:", imageUri);
+    }
+  };
+
+  const sendImageToServer = async () => {
+    if (selectedImages.length === 0) {
+      alert('Por favor, selecione uma imagem primeiro!');
+      return;
+    }
+
+    setLoading(true);
+
+    const selectedImage = selectedImages[0].localUri;
+    const newImageUri = "file:///" + selectedImage.split("file:/").join("");
+
+    const formData = new FormData();
+    formData.append('file', {
+      uri: newImageUri,
+      type: mime.getType(newImageUri) || 'image/jpeg',
+      name: newImageUri.split("/").pop() || 'photo.jpg'
+    } as any);
+
+    console.log("Enviando imagem para o servidor...");
+    console.log("URL do servidor:", API_URL);
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'multipart/form-data',
+        },
+      });
+
+      const data = await response.json();
+      console.log("Resposta do servidor:", data);
+      
+
+      if (data.alimento) {
+        setImageText(data.alimento);
+        router.push(`/telaReceitas?alimento=${encodeURIComponent(data.alimento)}`);
+      } else {
+      }
+    } catch (error) {
+      console.error('Erro ao enviar a imagem:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleContinue = () => {
     if (selectedImages.length > 0) {
-      // Navega para a tela de loading passando as URIs das imagens
-      router.push({
-        pathname: "/(tabs)/telaLoading",
-        params: { imageUri: selectedImages[0].localUri },
-      });
+      sendImageToServer();
     }
   };
 
@@ -60,12 +110,15 @@ export default function TelaCapturaImagem() {
           <Text style={styles.buttonText}>Tirar Foto</Text>
         </TouchableOpacity>
 
-        {/* Exibe o botão "Continuar" apenas se pelo menos uma imagem foi selecionada */}
+        {/* Exibe o botão "Analisar imagens" apenas se pelo menos uma imagem foi selecionada */}
         {selectedImages.length > 0 && (
-          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-            <Text style={styles.continueButtonText}>Analisar imagens</Text>
+          <TouchableOpacity style={styles.continueButton} onPress={handleContinue} disabled={loading}>
+            <Text style={styles.continueButtonText}>{loading ? "Carregando..." : "Analisar imagens"}</Text>
           </TouchableOpacity>
         )}
+
+        {/* Exibe o texto do alimento reconhecido se disponível */}
+        {imageText ? <Text style={styles.result}>Alimento: {imageText}</Text> : null}
       </View>
       <Footer />
     </View>
@@ -133,5 +186,10 @@ const styles = StyleSheet.create({
   continueButtonText: {
     color: "white",
     fontSize: 16,
+  },
+  result: {
+    marginTop: 20,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });

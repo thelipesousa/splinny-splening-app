@@ -3,9 +3,10 @@ import { View, Text, FlatList, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import axios from 'axios';
 
 interface Receita {
-  id: string; // Alterado para Spoonacular
+  id: string;
   title: string;
   ingredients: string[];
   instructions: string;
@@ -15,19 +16,34 @@ export default function TelaReceitas() {
   const [receitas, setReceitas] = useState<Receita[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Usar o hook para pegar os parâmetros passados pela tela de loading
-  const { receitas: receitasParam } = useLocalSearchParams();
+  // Usar o hook para pegar o parâmetro do alimento reconhecido
+  const { alimento } = useLocalSearchParams();
+  console.log("alimento recebido:", alimento);
 
   useEffect(() => {
-    if (receitasParam) {
-      // Parsear as receitas vindas dos parâmetros
-      const receitasList = JSON.parse(receitasParam as string);
-      setReceitas(receitasList);
-      setIsLoading(false);
+    if (alimento) {
+      // Realizar a requisição para buscar receitas com base no alimento
+      axios
+        .get(`https://api.spoonacular.com/recipes/complexSearch`, {
+          params: {
+            query: alimento,
+            apiKey: "6118fb23aa364ed49fdda62008599e7d", // Insira sua chave da Spoonacular
+            number: 5, // Número de receitas para retornar
+            language: 'pt', // Para garantir que a resposta esteja em português
+          }
+        })
+        .then((response) => {
+          setReceitas(response.data.results);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Erro ao buscar receitas:", error);
+          setIsLoading(false);
+        });
     } else {
       setIsLoading(false);
     }
-  }, [receitasParam]);
+  }, [alimento]);
 
   if (isLoading) {
     return <Text>Carregando...</Text>;
@@ -35,8 +51,8 @@ export default function TelaReceitas() {
 
   return (
     <View style={styles.container}>
-      <Header/>
-      <Text style={styles.title}>Receitas sugeridas</Text>
+      <Header />
+      <Text style={styles.title}>Receitas sugeridas para {alimento}</Text>
       {receitas.length > 0 ? (
         <FlatList
           data={receitas}
@@ -56,7 +72,7 @@ export default function TelaReceitas() {
       ) : (
         <Text style={styles.noReceitas}>Nenhuma receita encontrada</Text>
       )}
-      <Footer/>
+      <Footer />
     </View>
   );
 }

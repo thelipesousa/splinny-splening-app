@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 import mime from 'mime';
 
-const API_URL = 'https://64.181.180.186:8080/classificar';
+const API_URL = 'https://d36b-179-125-213-249.ngrok-free.app/classificar'; // Altere para o IP correto, se necessário
 
 const sendImageToAI = async (imageUri: string) => {
   if (!imageUri) {
@@ -10,30 +10,34 @@ const sendImageToAI = async (imageUri: string) => {
   }
 
   try {
-    let newImageUri = imageUri;
-    if (Platform.OS === 'android') {
-      newImageUri = imageUri.replace('file:///', '');
-    } else if (Platform.OS === 'ios') {
-      // Ajustes específicos para iOS, se necessários
-    }
-
+    // Ajusta o URI da imagem no Android
+    const newImageUri = Platform.OS === 'android' ? imageUri.replace('file:///', '') : imageUri;
     const mimeType = mime.getType(newImageUri) || 'image/jpeg';
 
+    // Configura o FormData para enviar a imagem com o nome do campo `file`
     const formData = new FormData();
-    const imageResponse = await fetch(newImageUri);
-    const blob = await imageResponse.blob();
-    formData.append('image', {
+    formData.append('file', {
       uri: newImageUri,
-      type: mimeType,
+      type: mime.getType(newImageUri),
       name: newImageUri.split('/').pop(),
     } as any);
 
-    console.log("Imagem URI ajustada:", newImageUri);
-    console.log("Tipo MIME:", mimeType);
+    console.log("Enviando imagem para o servidor...");
+    console.log("URL do servidor:", API_URL);
+    console.log("Dados da imagem:", {
+      uri: newImageUri,
+      name: newImageUri.split('/').pop(),
+      type: mimeType,
+    });
 
+    // Envio da requisição POST para o servidor
     const response = await fetch(API_URL, {
       method: 'POST',
       body: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Accept: 'multipart/form-data',
+      },
     });
 
     if (!response.ok) {
@@ -42,11 +46,12 @@ const sendImageToAI = async (imageUri: string) => {
 
     const responseData = await response.json();
     console.log("Resposta do servidor:", responseData);
-    return responseData.classificacao || null;
+
+    return responseData.alimento || null; // Retorna o resultado ou null
   } catch (error) {
-    console.error('Erro no envio da imagem:', error);
+    console.error('Erro ao enviar a imagem:', error);
     return null;
   }
 };
 
-export default{ sendImageToAI };
+export default { sendImageToAI };
