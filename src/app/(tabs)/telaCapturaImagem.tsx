@@ -6,11 +6,11 @@ import mime from "mime";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 
-const API_URL = 'https://d36b-179-125-213-249.ngrok-free.app/classificar';
+const API_URL = 'https://divine-moving-yeti.ngrok-free.app/classificar'; //Pode usar também: http://127.0.0.1:8080/classificar ou IP da sua maquina local
 
 export default function TelaCapturaImagem() {
   const [selectedImages, setSelectedImages] = useState<{ localUri: string }[]>([]);
-  const [imageText, setImageText] = useState<string>('');
+  const [imageResults, setImageResults] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
@@ -35,22 +35,22 @@ export default function TelaCapturaImagem() {
       alert('Por favor, selecione uma imagem primeiro!');
       return;
     }
-
+  
     setLoading(true);
-
-    const selectedImage = selectedImages[0].localUri;
-    const newImageUri = "file:///" + selectedImage.split("file:/").join("");
-
+  
     const formData = new FormData();
-    formData.append('file', {
-      uri: newImageUri,
-      type: mime.getType(newImageUri) || 'image/jpeg',
-      name: newImageUri.split("/").pop() || 'photo.jpg'
-    } as any);
-
-    console.log("Enviando imagem para o servidor...");
+    selectedImages.forEach((image, index) => {
+      const newImageUri = "file:///" + image.localUri.split("file:/").join("");
+      formData.append('file', {
+        uri: newImageUri,
+        type: mime.getType(newImageUri) || 'image/jpeg',
+        name: newImageUri.split("/").pop() || `photo${index}.jpg`
+      } as any);
+    });
+  
+    console.log("Enviando imagens para o servidor...");
     console.log("URL do servidor:", API_URL);
-
+  
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -60,18 +60,22 @@ export default function TelaCapturaImagem() {
           Accept: 'multipart/form-data',
         },
       });
-
+  
       const data = await response.json();
-      console.log("Resposta do servidor:", data);
-      
-
-      if (data.alimento) {
-        setImageText(data.alimento);
-        router.push(`/telaReceitas?alimento=${encodeURIComponent(data.alimento)}`);
+      console.log("Resposta completa do servidor:", data);
+  
+      if (data.predictions) {
+        data.predictions.forEach((prediction: { filename: string; classificacao: string }, index: number) => {
+          console.log(`Imagem ${index + 1}:`);
+          console.log(`  Nome do arquivo: ${prediction.filename}`);
+          console.log(`  Classificação: ${prediction.classificacao}`);
+        });
       } else {
+        console.log("Nenhuma classificação foi recebida.");
       }
+  
     } catch (error) {
-      console.error('Erro ao enviar a imagem:', error);
+      console.error('Erro ao enviar as imagens:', error);
     } finally {
       setLoading(false);
     }
@@ -117,8 +121,16 @@ export default function TelaCapturaImagem() {
           </TouchableOpacity>
         )}
 
-        {/* Exibe o texto do alimento reconhecido se disponível */}
-        {imageText ? <Text style={styles.result}>Alimento: {imageText}</Text> : null}
+        {/* Exibe o texto dos alimentos reconhecidos para cada imagem */}
+        {/* {imageResults.length > 0 && (
+          <View style={styles.resultsContainer}>
+            {imageResults.map((result, index) => (
+              <Text key={index} style={styles.result}>
+                {result.filename}: {result.classificacao}
+              </Text>
+            ))}
+          </View>
+        )} */}
       </View>
       <Footer />
     </View>
@@ -149,8 +161,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   scrollContainer: {
-    height: 250, // Define a altura fixa para o espaço das imagens
-    width: '100%', // Ocupa toda a largura da tela
+    height: 250,
+    width: '100%',
     marginBottom: 10,
   },
   imageContainer: {
@@ -160,7 +172,7 @@ const styles = StyleSheet.create({
   image: {
     width: 250,
     height: 250,
-    marginBottom: 10, // Espaço entre as imagens
+    marginBottom: 10,
   },
   button: {
     backgroundColor: "red",
@@ -187,9 +199,14 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
   },
-  result: {
+  resultsContainer: {
     marginTop: 20,
+    width: '100%',
+    alignItems: 'center',
+  },
+  result: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 10,
   },
 });
