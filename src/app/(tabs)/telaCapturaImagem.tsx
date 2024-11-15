@@ -84,6 +84,7 @@ export default function TelaCapturaImagem() {
   const handleContinue = () => {
     if (selectedImages.length > 0) {
       sendImageToServer();
+      router.push('/telaReceitas'); // Redireciona para a TelaReceitas após o envio das imagens
     }
   };
 

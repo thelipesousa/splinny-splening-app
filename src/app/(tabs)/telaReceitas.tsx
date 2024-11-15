@@ -18,19 +18,26 @@ export default function TelaReceitas() {
 
   // Usar o hook para pegar o parâmetro do alimento reconhecido
   const { alimento } = useLocalSearchParams();
-  console.log("alimento recebido:", alimento);
+  console.log("Alimento recebido:", alimento);
 
   useEffect(() => {
     if (alimento) {
-      // Realizar a requisição para buscar receitas com base no alimento
+      // Primeira requisição: buscar ingredientes da IA
       axios
-        .get(`https://api.spoonacular.com/recipes/complexSearch`, {
-          params: {
-            query: alimento,
-            apiKey: "6118fb23aa364ed49fdda62008599e7d", // Insira sua chave da Spoonacular
-            number: 5, // Número de receitas para retornar
-            language: 'pt', // Para garantir que a resposta esteja em português
-          }
+        .get(`https://divine-moving-yeti.ngrok-free.app/classificar`, { params: { alimento } }) // Ajuste a URL conforme necessário
+        .then((response) => {
+          const ingredientes = response.data.predictions || [];
+          const ingredientesString = ingredientes.map((item: any) => item.classificacao).join(", ");
+          
+          // Segunda requisição: buscar receitas com base nos ingredientes
+          return axios.get(`https://api.spoonacular.com/recipes/complexSearch`, {
+            params: {
+              query: ingredientesString,
+              apiKey: "6118fb23aa364ed49fdda62008599e7d", // Insira sua chave da Spoonacular
+              number: 5, // Número de receitas para retornar
+              language: 'pt', // Para garantir que a resposta esteja em português
+            }
+          });
         })
         .then((response) => {
           setReceitas(response.data.results);
@@ -52,7 +59,7 @@ export default function TelaReceitas() {
   return (
     <View style={styles.container}>
       <Header />
-      <Text style={styles.title}>Receitas sugeridas para {alimento}</Text>
+      <Text style={styles.title}>Receitas sugeridas</Text>
       {receitas.length > 0 ? (
         <FlatList
           data={receitas}
