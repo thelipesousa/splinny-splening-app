@@ -7,7 +7,7 @@ module.exports = function (api) {
     ],
     plugins: [
       '@babel/plugin-proposal-export-namespace-from',
-      'react-native-reanimated/plugin',
+      ['react-native-reanimated/plugin', { "useBridge": false }], // Desabilita o Bridgeless Mode
     ],
   };
 };
