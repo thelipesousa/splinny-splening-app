@@ -1,28 +1,41 @@
 import React from "react";
 import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import Header from "@/components/header";  // Certifique-se de que o caminho está correto
-import Footer from "@/components/footer";  // Certifique-se de que o caminho está correto
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 
 export default function DetalhesReceita() {
   const { nome, calorias, ingredientes, imagem } = useLocalSearchParams();
 
+  // Garantir que 'nome' e 'calorias' sejam strings
+  const nomeReceita = nome ? String(nome) : 'Nome não disponível';
+  const caloriasReceita = calorias ? String(calorias) : 'Calorias não disponíveis';
+
+  // Tentar analisar os ingredientes, se estiver presente e for uma string JSON
+  let ingredientesParsed: [string, any][] = [];
+  if (typeof ingredientes === 'string') {
+    try {
+      ingredientesParsed = Object.entries(JSON.parse(ingredientes));
+    } catch (e) {
+      console.error('Erro ao parsear ingredientes:', e);
+    }
+  }
+
   return (
     <View style={styles.container}>
-      <Header /> {/* Adicionando o Header */}
+      <Header />
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {typeof imagem === 'string' && <Image source={{ uri: imagem }} style={styles.image} />}
-        <Text style={styles.title}>{nome}</Text>
-        <Text style={styles.calorias}>Calorias: {calorias}</Text>
+        <Text style={styles.title}>{nomeReceita}</Text>
+        <Text style={styles.calorias}>Calorias: {caloriasReceita}</Text>
         <Text style={styles.subtitle}>Ingredientes:</Text>
-        {ingredientes &&
-          Object.entries(JSON.parse(ingredientes as string)).map(([key, value], index) => (
-            <Text key={index} style={styles.ingredient}>
-              • {key.replace(/_/g, " ")}: {String(value)}
-            </Text>
-          ))}
+        {ingredientesParsed.map(([key, value], index) => (
+          <Text key={index} style={styles.ingredient}>
+            • {key.replace(/_/g, " ")}: {String(value)}
+          </Text>
+        ))}
       </ScrollView>
-      <Footer /> {/* Adicionando o Footer */}
+      <Footer />
     </View>
   );
 }
@@ -31,7 +44,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    padding:16,
+    padding: 16,
   },
   scrollContainer: {
     flexGrow: 1,
