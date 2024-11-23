@@ -1,78 +1,45 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import axios from 'axios';
 
 interface Receita {
-  id: string;
-  title: string;
-  ingredients: string[];
-  instructions: string;
+  nome: string;
+  calorias: number;
+  ingredientes: Record<string, string>;
+  similaridade: number;
 }
 
 export default function TelaReceitas() {
-  const [receitas, setReceitas] = useState<Receita[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Usar o hook para pegar o parâmetro do alimento reconhecido
-  const { alimento } = useLocalSearchParams();
-  console.log("Alimento recebido:", alimento);
+  const { receitas } = useLocalSearchParams();
+  const [receitasRecomendadas, setReceitasRecomendadas] = useState<Receita[]>([]);
 
   useEffect(() => {
-    if (alimento) {
-      // Primeira requisição: buscar ingredientes da IA
-      axios
-        .get(`https://divine-moving-yeti.ngrok-free.app/classificar`, { params: { alimento } }) // Ajuste a URL conforme necessário
-        .then((response) => {
-          const ingredientes = response.data.predictions || [];
-          const ingredientesString = ingredientes.map((item: any) => item.classificacao).join(", ");
-          
-          // Segunda requisição: buscar receitas com base nos ingredientes
-          return axios.get(`https://api.spoonacular.com/recipes/complexSearch`, {
-            params: {
-              query: ingredientesString,
-              apiKey: "6118fb23aa364ed49fdda62008599e7d", // Insira sua chave da Spoonacular
-              number: 5, // Número de receitas para retornar
-              language: 'pt', // Para garantir que a resposta esteja em português
-            }
-          });
-        })
-        .then((response) => {
-          setReceitas(response.data.results);
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          console.error("Erro ao buscar receitas:", error);
-          setIsLoading(false);
-        });
-    } else {
-      setIsLoading(false);
+    if (receitas) {
+      const parsedReceitas = JSON.parse(receitas as string);
+      setReceitasRecomendadas(parsedReceitas);
     }
-  }, [alimento]);
-
-  if (isLoading) {
-    return <Text>Carregando...</Text>;
-  }
+  }, [receitas]);
 
   return (
     <View style={styles.container}>
       <Header />
       <Text style={styles.title}>Receitas sugeridas</Text>
-      {receitas.length > 0 ? (
+      {receitasRecomendadas.length > 0 ? (
         <FlatList
-          data={receitas}
-          keyExtractor={(item) => item.id.toString()}
+          data={receitasRecomendadas}
+          keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.receitaContainer}>
-              <Text style={styles.receitaTitle}>{item.title}</Text>
+              <Text style={styles.receitaTitle}>{item.nome}</Text>
+              <Text style={styles.subtitle}>Calorias: {item.calorias}</Text>
               <Text style={styles.subtitle}>Ingredientes:</Text>
-              {item.ingredients.map((ing, index) => (
-                <Text key={index} style={styles.ingredient}>• {ing}</Text>
+              {Object.entries(item.ingredientes).map(([key, value], index) => (
+                <Text key={index} style={styles.ingredient}>
+                  • {key.replace(/_/g, " ")}: {value}
+                </Text>
               ))}
-              <Text style={styles.subtitle}>Instruções:</Text>
-              <Text style={styles.instructions}>{item.instructions}</Text>
             </View>
           )}
         />
@@ -115,10 +82,6 @@ const styles = StyleSheet.create({
   ingredient: {
     fontSize: 16,
     marginLeft: 8,
-  },
-  instructions: {
-    fontSize: 16,
-    marginTop: 4,
   },
   noReceitas: {
     fontSize: 18,

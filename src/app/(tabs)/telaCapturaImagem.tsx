@@ -6,11 +6,10 @@ import mime from "mime";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 
-const API_URL = 'https://divine-moving-yeti.ngrok-free.app/classificar'; //Pode usar também: http://127.0.0.1:8080/classificar ou IP da sua maquina local
+const API_URL = 'https://divine-moving-yeti.ngrok-free.app/classificar'; // URL da API
 
 export default function TelaCapturaImagem() {
   const [selectedImages, setSelectedImages] = useState<{ localUri: string }[]>([]);
-  const [imageResults, setImageResults] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
@@ -35,9 +34,9 @@ export default function TelaCapturaImagem() {
       alert('Por favor, selecione uma imagem primeiro!');
       return;
     }
-  
+
     setLoading(true);
-  
+
     const formData = new FormData();
     selectedImages.forEach((image, index) => {
       const newImageUri = "file:///" + image.localUri.split("file:/").join("");
@@ -47,10 +46,7 @@ export default function TelaCapturaImagem() {
         name: newImageUri.split("/").pop() || `photo${index}.jpg`
       } as any);
     });
-  
-    console.log("Enviando imagens para o servidor...");
-    console.log("URL do servidor:", API_URL);
-  
+
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -60,20 +56,18 @@ export default function TelaCapturaImagem() {
           Accept: 'multipart/form-data',
         },
       });
-  
+
       const data = await response.json();
       console.log("Resposta completa do servidor:", data);
-  
-      if (data.predictions) {
-        data.predictions.forEach((prediction: { filename: string; classificacao: string }, index: number) => {
-          console.log(`Imagem ${index + 1}:`);
-          console.log(`  Nome do arquivo: ${prediction.filename}`);
-          console.log(`  Classificação: ${prediction.classificacao}`);
+
+      if (data.recommendations) {
+        router.push({
+          pathname: '/telaReceitas',
+          params: { receitas: JSON.stringify(data.recommendations) }
         });
       } else {
-        console.log("Nenhuma classificação foi recebida.");
+        alert("Nenhuma recomendação foi retornada.");
       }
-  
     } catch (error) {
       console.error('Erro ao enviar as imagens:', error);
     } finally {
@@ -82,10 +76,7 @@ export default function TelaCapturaImagem() {
   };
 
   const handleContinue = () => {
-    if (selectedImages.length > 0) {
-      sendImageToServer();
-      router.push('/telaReceitas'); // Redireciona para a TelaReceitas após o envio das imagens
-    }
+    sendImageToServer();
   };
 
   return (
@@ -94,7 +85,6 @@ export default function TelaCapturaImagem() {
       <View style={styles.content}>
         <Text style={styles.title}>Escolha uma ou mais fotos:</Text>
 
-        {/* Contêiner rolável para as imagens */}
         <View style={styles.scrollContainer}>
           <ScrollView contentContainerStyle={styles.imageContainer}>
             {selectedImages.length > 0 ? (
@@ -115,23 +105,11 @@ export default function TelaCapturaImagem() {
           <Text style={styles.buttonText}>Tirar Foto</Text>
         </TouchableOpacity>
 
-        {/* Exibe o botão "Analisar imagens" apenas se pelo menos uma imagem foi selecionada */}
         {selectedImages.length > 0 && (
           <TouchableOpacity style={styles.continueButton} onPress={handleContinue} disabled={loading}>
             <Text style={styles.continueButtonText}>{loading ? "Carregando..." : "Analisar imagens"}</Text>
           </TouchableOpacity>
         )}
-
-        {/* Exibe o texto dos alimentos reconhecidos para cada imagem */}
-        {/* {imageResults.length > 0 && (
-          <View style={styles.resultsContainer}>
-            {imageResults.map((result, index) => (
-              <Text key={index} style={styles.result}>
-                {result.filename}: {result.classificacao}
-              </Text>
-            ))}
-          </View>
-        )} */}
       </View>
       <Footer />
     </View>
@@ -199,15 +177,5 @@ const styles = StyleSheet.create({
   continueButtonText: {
     color: "white",
     fontSize: 16,
-  },
-  resultsContainer: {
-    marginTop: 20,
-    width: '100%',
-    alignItems: 'center',
-  },
-  result: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
   },
 });
