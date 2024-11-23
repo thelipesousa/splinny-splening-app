@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
@@ -9,16 +9,48 @@ interface Receita {
   calorias: number;
   ingredientes: Record<string, string>;
   similaridade: number;
+  imagem?: string | null;
 }
+
+const fetchRecipeImage = async (query: string): Promise<string | null> => {
+  const UNSPLASH_API_KEY = "SlNYCfUChi2tD6Eg_N7pkvz1SYTlPv7NIE2s5NzOhVw";
+  const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(
+    query
+  )}&client_id=${UNSPLASH_API_KEY}&per_page=1`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.results && data.results.length > 0) {
+      return data.results[0].urls.small;
+    }
+    return null;
+  } catch (error) {
+    console.error("Erro ao buscar imagem:", error);
+    return null;
+  }
+};
 
 export default function TelaReceitas() {
   const { receitas } = useLocalSearchParams();
   const [receitasRecomendadas, setReceitasRecomendadas] = useState<Receita[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
+    async function fetchImagesForRecipes(receitas: Receita[]) {
+      const receitasComImagens = await Promise.all(
+        receitas.map(async (receita) => {
+          const imagem = await fetchRecipeImage(receita.nome);
+          return { ...receita, imagem };
+        })
+      );
+      setReceitasRecomendadas(receitasComImagens);
+    }
+
     if (receitas) {
       const parsedReceitas = JSON.parse(receitas as string);
-      setReceitasRecomendadas(parsedReceitas);
+      fetchImagesForRecipes(parsedReceitas);
     }
   }, [receitas]);
 
@@ -31,16 +63,25 @@ export default function TelaReceitas() {
           data={receitasRecomendadas}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
-            <View style={styles.receitaContainer}>
-              <Text style={styles.receitaTitle}>{item.nome}</Text>
-              <Text style={styles.subtitle}>Calorias: {item.calorias}</Text>
-              <Text style={styles.subtitle}>Ingredientes:</Text>
-              {Object.entries(item.ingredientes).map(([key, value], index) => (
-                <Text key={index} style={styles.ingredient}>
-                  • {key.replace(/_/g, " ")}: {value}
-                </Text>
-              ))}
-            </View>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/telaDetalheReceita",
+                  params: {
+                    nome: item.nome,
+                    calorias: item.calorias,
+                    ingredientes: JSON.stringify(item.ingredientes),
+                    imagem: item.imagem,
+                  },
+                })
+              }
+            >
+              <View style={styles.receitaContainer}>
+                {item.imagem && <Image source={{ uri: item.imagem }} style={styles.image} />}
+                <Text style={styles.receitaTitle}>{item.nome}</Text>
+                <Text style={styles.subtitle}>Calorias: {item.calorias}</Text>
+              </View>
+            </TouchableOpacity>
           )}
         />
       ) : (
@@ -79,12 +120,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 4,
   },
-  ingredient: {
-    fontSize: 16,
-    marginLeft: 8,
-  },
   noReceitas: {
     fontSize: 18,
     color: "#888",
+  },
+  image: {
+    width: "100%",
+    height: 200,
+    marginBottom: 8,
+    borderRadius: 8,
   },
 });

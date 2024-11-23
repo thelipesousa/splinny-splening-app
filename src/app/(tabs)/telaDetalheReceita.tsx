@@ -1,23 +1,28 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import React from "react";
+import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import Header from "@/components/header";  // Certifique-se de que o caminho está correto
+import Footer from "@/components/footer";  // Certifique-se de que o caminho está correto
 
-interface Recipe {
-  id: number;
-  title: string;
-  image: string;
-  summary: string;
-}
-
-export default function TelaDetalheReceita() {
-  const route = useRoute();
-  const { recipe } = route.params as { recipe: Recipe };  // Pegando os parâmetros
+export default function DetalhesReceita() {
+  const { nome, calorias, ingredientes, imagem } = useLocalSearchParams();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{recipe.title}</Text>
-      <Image source={{ uri: recipe.image }} style={styles.image} />
-      <Text style={styles.summary}>{recipe.summary}</Text>
+      <Header /> {/* Adicionando o Header */}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {typeof imagem === 'string' && <Image source={{ uri: imagem }} style={styles.image} />}
+        <Text style={styles.title}>{nome}</Text>
+        <Text style={styles.calorias}>Calorias: {calorias}</Text>
+        <Text style={styles.subtitle}>Ingredientes:</Text>
+        {ingredientes &&
+          Object.entries(JSON.parse(ingredientes as string)).map(([key, value], index) => (
+            <Text key={index} style={styles.ingredient}>
+              • {key.replace(/_/g, " ")}: {String(value)}
+            </Text>
+          ))}
+      </ScrollView>
+      <Footer /> {/* Adicionando o Footer */}
     </View>
   );
 }
@@ -25,21 +30,36 @@ export default function TelaDetalheReceita() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
+    padding:16,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    padding: 16,
+  },
+  image: {
+    width: "100%",
+    height: 250,
+    marginBottom: 16,
+    borderRadius: 8,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
+    marginBottom: 16,
   },
-  image: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    marginVertical: 10,
+  calorias: {
+    fontSize: 18,
+    marginBottom: 16,
   },
-  summary: {
+  subtitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  ingredient: {
     fontSize: 16,
-    color: '#666',
+    marginLeft: 8,
+    marginBottom: 4,
   },
 });
